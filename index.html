@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>ABC-анализ — Тренажер | Синергия</title>
+<style>
+:root{
+  --purple:#5B2C8D; --purple-dark:#3E1A66; --gold:#F5A623;
+  --bg:#f4f1f8; --card:#fff; --text:#1e1e2f; --muted:#6b6b80;
+  --success:#2e9e5b; --danger:#d64545;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+header{background:linear-gradient(135deg,var(--purple),var(--purple-dark));color:#fff;padding:20px 32px;box-shadow:0 4px 20px rgba(91,44,141,.3)}
+header h1{font-size:1.5rem;font-weight:700}
+header .sub{opacity:.85;font-size:.9rem;margin-top:4px}
+.tabs{max-width:1240px;margin:20px auto 0;padding:0 20px;display:flex;gap:8px;flex-wrap:wrap}
+.tab{background:#e9e2f3;color:var(--purple);border:none;padding:12px 22px;border-radius:12px 12px 0 0;font-family:inherit;font-weight:600;font-size:.92rem;cursor:pointer;transition:.2s}
+.tab:hover{background:#ded3ee}
+.tab.active{background:#fff;color:var(--purple-dark);box-shadow:0 -2px 8px rgba(91,44,141,.08)}
+.layout{max-width:1240px;margin:0 auto;padding:0 20px 24px;display:grid;grid-template-columns:2fr 1fr;gap:24px;align-items:start}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+.main{display:flex;flex-direction:column;gap:20px}
+.card{background:var(--card);border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px}
+button{font-family:inherit;font-size:.9rem;font-weight:600;border:none;border-radius:10px;padding:10px 18px;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--purple);color:#fff}
+.btn-primary:hover{background:var(--purple-dark)}
+.btn-gold{background:var(--gold);color:#1e1e2f}
+.btn-gold:hover{filter:brightness(.95)}
+.btn-ghost{background:#efeaf5;color:var(--purple)}
+.btn-ghost:hover{background:#e2d9ee}
+.btn-calc{background:#e8f5ff;color:#1a5d99;border:1px solid #b8d9f0}
+.btn-calc:hover{background:#d4ebff}
+.btn-danger{background:#fbeaea;color:var(--danger)}
+.timer{font-variant-numeric:tabular-nums;font-weight:700;font-size:1.1rem;padding:8px 16px;border-radius:10px;background:#efeaf5;color:var(--purple);margin-left:auto}
+.timer.warning{background:#fdeaea;color:var(--danger);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.6}}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th{background:#f0ecf6;color:var(--purple-dark);text-align:left;padding:10px 8px;font-weight:600;position:sticky;top:0}
+td{padding:8px;border-bottom:1px solid #eee}
+tr:hover{background:#faf8fd}
+input.cell{width:100%;border:1px solid #ddd;border-radius:6px;padding:6px 8px;font-size:.85rem;font-family:inherit}
+input.cell:focus{outline:2px solid var(--purple);border-color:transparent}
+input.cell.correct{border-color:var(--success);background:#f0fbf4}
+input.cell.wrong{border-color:var(--danger);background:#fdf0f0}
+select.group{border:1px solid #ddd;border-radius:6px;padding:6px 8px;font-weight:700;font-family:inherit}
+select.group.correct{border-color:var(--success);background:#f0fbf4}
+select.group.wrong{border-color:var(--danger);background:#fdf0f0}
+.btn-explain{background:transparent;border:1px solid #d0c6e0;color:var(--purple);padding:4px 8px;font-size:.8rem;border-radius:6px}
+.btn-explain:hover{background:#efeaf5}
+.hint{background:#fff8e6;border-left:4px solid var(--gold);padding:14px 18px;border-radius:8px;margin-bottom:12px;font-size:.88rem}
+.hint h4{color:var(--purple);margin-bottom:6px;font-size:.95rem}
+.hint code{background:#fff;padding:2px 6px;border-radius:4px;font-family:Consolas,monospace;color:var(--purple-dark);font-size:.85rem;display:inline-block;margin:2px 0}
+.result{display:none;padding:16px;border-radius:12px;margin-top:16px;font-weight:600}
+.result.show{display:block}
+.result.ok{background:#eafaf0;color:var(--success);border:1px solid #b8e6c8}
+.result.bad{background:#fdf0f0;color:var(--danger);border:1px solid #f3c0c0}
+.legend{font-size:.85rem;color:var(--muted);margin-top:12px}
+.legend span{display:inline-block;margin-right:16px}
+.tag-A{background:#d1f0dc;color:#1e7a44;padding:2px 8px;border-radius:6px;font-weight:700}
+.tag-B{background:#fff2cc;color:#8a6d00;padding:2px 8px;border-radius:6px;font-weight:700}
+.tag-C{background:#fbe0e0;color:#b03030;padding:2px 8px;border-radius:6px;font-weight:700}
+.hidden{display:none!important}
+.q-legend{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 20px}
+.q-cell{padding:10px 12px;border-radius:10px;font-size:.8rem;text-align:center;font-weight:600}
+.q-ok{background:#eafaf0;color:#1e7a44}
+.q-warn{background:#fff8e6;color:#8a6d00}
+.q-danger{background:#fdf0f0;color:var(--danger)}
+.stat{background:#faf8fd;border-radius:10px;padding:10px 16px;font-size:.85rem;margin-bottom:8px}
+.stat b{color:var(--purple);font-size:1.05rem}
+
+/* ===== Модальное окно калькулятора ===== */
+.modal{position:fixed;inset:0;background:rgba(30,30,47,.6);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;backdrop-filter:blur(4px)}
+.modal-content{background:#fff;border-radius:20px;padding:32px;max-width:640px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);position:relative}
+.modal-content h3{color:var(--purple);margin-bottom:8px;font-size:1.3rem}
+.modal-content .lead{color:var(--muted);font-size:.9rem;margin-bottom:20px}
+.modal-close{position:absolute;top:16px;right:16px;background:#f0ecf6;color:var(--purple);width:36px;height:36px;border-radius:50%;padding:0;justify-content:center;font-size:1.4rem;font-weight:400}
+.modal-close:hover{background:#e2d9ee}
+.calc-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px}
+@media(max-width:600px){.calc-grid{grid-template-columns:1fr}}
+.calc-grid label{display:flex;flex-direction:column;font-size:.82rem;color:var(--muted);gap:4px}
+.calc-grid input{border:2px solid #e0d8ec;border-radius:8px;padding:10px 12px;font-size:1rem;font-family:inherit;font-weight:600;color:var(--purple-dark);transition:.2s}
+.calc-grid input:focus{outline:none;border-color:var(--purple);background:#faf8fd}
+.calc-steps{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+.calc-step{background:#faf8fd;border-radius:12px;padding:14px 18px;border-left:4px solid var(--purple)}
+.calc-step-title{font-weight:700;color:var(--purple-dark);margin-bottom:8px;font-size:.92rem}
+.calc-formula{font-family:Consolas,monospace;font-size:.95rem;background:#fff;padding:10px 14px;border-radius:8px;color:var(--text);word-break:break-word}
+.calc-formula b{color:var(--purple);font-size:1.05rem}
+.calc-formula .op{color:#999;margin:0 4px}
+.calc-result{background:linear-gradient(135deg,#faf8fd,#efeaf5);border-radius:12px;padding:18px;text-align:center;font-size:.95rem}
+.calc-result .big-group{font-size:2.4rem;font-weight:800;display:block;margin:4px 0}
+.calc-bar{position:relative;height:32px;background:#f0ecf6;border-radius:8px;overflow:visible;margin-top:12px}
+.calc-bar-fill{height:100%;border-radius:8px;transition:width .4s ease}
+.calc-bar-fill.A{background:linear-gradient(90deg,#4dbd74,#2e9e5b)}
+.calc-bar-fill.B{background:linear-gradient(90deg,#f5c542,#d9a800)}
+.calc-bar-fill.C{background:linear-gradient(90deg,#e87070,#c93b3b)}
+.calc-bar-marker{position:absolute;top:-6px;bottom:-6px;width:2px;background:var(--purple-dark);opacity:.5}
+.calc-bar-marker::after{content:attr(data-label);position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:.7rem;color:var(--purple);font-weight:700;white-space:nowrap}
+</style>
+</head>
+<body>
+<header>
+  <h1>📊 Тренажёр: ABC-анализ ассортимента</h1>
+  <div class="sub">Университет «Синергия» · СПО 38.02.08 · Подготовка к демоэкзамену</div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" data-mod="1">📊 Модуль 1: ABC по выручке</button>
+  <button class="tab" data-mod="2">📦 Модуль 2: ABC по остаткам + матрица</button>
+</div>
+
+<div class="layout">
+  <main class="main">
+
+    <!-- ====== МОДУЛЬ 1 ====== -->
+    <div id="module1Content">
+      <div class="card">
+        <div class="toolbar">
+          <button class="btn-primary" id="btnNew1">🎲 Новый набор</button>
+          <button class="btn-gold" id="btnFill1">💡 Показать расчёт</button>
+          <button class="btn-calc" id="btnCalc1">🧮 Калькулятор</button>
+          <button class="btn-primary" id="btnCheck1">✅ Проверить</button>
+          <button class="btn-ghost" id="btnHint1">📘 Excel</button>
+          <div class="timer" id="timer1">15:00</div>
+        </div>
+        <div id="hintPanel1" class="hint hidden">
+          <h4>Формулы Excel — ABC по выручке</h4>
+          <div><b>Шаг 1. Сортировка:</b> «Данные» → «Сортировка» → по «Выручка» → «от Я к А».</div>
+          <div style="margin-top:8px"><b>Шаг 2. Доля, %:</b> <code>=B2/СУММ($B$2:$B$20)*100</code></div>
+          <div style="margin-top:8px"><b>Шаг 3. Накопительная:</b> первая ячейка <code>=C2</code>, ниже <code>=D2+C3</code></div>
+          <div style="margin-top:8px"><b>Шаг 4. Группа:</b> <code>=ЕСЛИ(D2&lt;=80;"A";ЕСЛИ(D2&lt;=95;"B";"C"))</code></div>
+        </div>
+        <div id="summary1" style="background:#f0ecf6;border-radius:10px;padding:12px 18px;margin-bottom:12px;font-size:.92rem"></div>
+        <div style="overflow-x:auto;max-height:55vh;overflow-y:auto">
+          <table id="tbl1">
+            <thead><tr>
+              <th style="width:40px">№</th>
+              <th>Наименование</th>
+              <th style="width:110px">Выручка, ₽</th>
+              <th style="width:110px">Доля, %</th>
+              <th style="width:130px">Накопит. доля, %</th>
+              <th style="width:90px">Группа</th>
+              <th style="width:50px">🔍</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="result" id="result1"></div>
+        <div class="legend">
+          <span><b class="tag-A">A</b> — до 80 %</span>
+          <span><b class="tag-B">B</b> — 80–95 %</span>
+          <span><b class="tag-C">C</b> — свыше 95 %</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== МОДУЛЬ 2 ====== -->
+    <div id="module2Content" style="display:none">
+      <div class="card">
+        <div class="toolbar">
+          <button class="btn-primary" id="btnNew2">🎲 Новый набор</button>
+          <button class="btn-gold" id="btnFill2">💡 Показать расчёт</button>
+          <button class="btn-calc" id="btnCalc2">🧮 Калькулятор</button>
+          <button class="btn-primary" id="btnCheck2">✅ Проверить + матрица</button>
+          <button class="btn-ghost" id="btnHint2">📘 Excel</button>
+          <div class="timer" id="timer2">15:00</div>
+        </div>
+        <div id="hintPanel2" class="hint hidden">
+          <h4>Формулы Excel — ABC по остаткам</h4>
+          <div><b>Шаг 1. Сортировка:</b> «Данные» → «Сортировка» → по «Остаток» → «от Я к А».</div>
+          <div style="margin-top:8px"><b>Шаг 2. Доля, %:</b> <code>=B2/СУММ($B$2:$B$20)*100</code></div>
+          <div style="margin-top:8px"><b>Шаг 3. Накопительная:</b> первая ячейка <code>=C2</code>, ниже <code>=D2+C3</code></div>
+          <div style="margin-top:8px"><b>Шаг 4. Группа:</b> <code>=ЕСЛИ(D2&lt;=80;"A";ЕСЛИ(D2&lt;=95;"B";"C"))</code></div>
+        </div>
+        <div id="summary2" style="background:#f0ecf6;border-radius:10px;padding:12px 18px;margin-bottom:12px;font-size:.92rem"></div>
+        <div style="overflow-x:auto;max-height:55vh;overflow-y:auto">
+          <table id="tbl2">
+            <thead><tr>
+              <th style="width:40px">№</th>
+              <th>Наименование</th>
+              <th style="width:110px">Остаток, ₽</th>
+              <th style="width:110px">Доля, %</th>
+              <th style="width:130px">Накопит. доля, %</th>
+              <th style="width:90px">Группа</th>
+              <th style="width:50px">🔍</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="result" id="result2"></div>
+      </div>
+
+      <div class="card hidden" id="matrixCard">
+        <h3 style="color:var(--purple);margin-bottom:12px">🔀 Матрица «Продажи × Остатки»</h3>
+        <div class="q-legend">
+          <div class="q-cell q-danger">⚠️ A×A — затоваривание<br>🔴 C×A — мёртвый груз</div>
+          <div class="q-cell q-warn">🟡 B×A — перезаказ<br>🟡 C×B — сократить</div>
+          <div class="q-cell q-ok">🟢 A×B, A×C, B×B,<br>B×C, C×C — норма</div>
+        </div>
+        <div id="matrixBody"></div>
+        <div id="recommendations"></div>
+      </div>
+    </div>
+  </main>
+
+  <aside class="sidebar">
+    <div class="card">
+      <h3 style="color:var(--purple);margin-bottom:12px">🎯 Задание</h3>
+      <div id="instructions"></div>
+      <div style="margin-top:16px;padding:12px;background:#faf8fd;border-radius:10px;font-size:.85rem">
+        <b style="color:var(--purple)">Таймер:</b> 15 минут на попытку.<br>
+        <b style="color:var(--purple)">Оценка:</b> 90 %+ — «5», 75 %+ — «4», 60 %+ — «3».
+      </div>
+      <div id="progressPanel" style="margin-top:16px"></div>
+      <button class="btn-danger" id="btnResetAll" style="margin-top:16px;width:100%;justify-content:center">↺ Сбросить статистику</button>
+    </div>
+  </aside>
+</div>
+
+<!-- ====== МОДАЛЬНОЕ ОКНО КАЛЬКУЛЯТОРА ====== -->
+<div id="calcModal" class="modal hidden">
+  <div class="modal-content">
+    <button class="modal-close" id="calcClose">×</button>
+    <h3>🧮 Калькулятор ABC-анализа</h3>
+    <p class="lead">Меняйте числа — формулы и группа пересчитываются мгновенно. Так вы увидите, как считается каждый показатель.</p>
+
+    <div class="calc-grid">
+      <label>Общая сумма (Σ), ₽
+        <input type="number" id="calcTotal" value="15600" step="0.01">
+      </label>
+      <label><span id="calcItemLabel">Выручка товара</span>, ₽
+        <input type="number" id="calcItem" value="5000" step="0.01">
+      </label>
+      <label>Накопленная доля до, %
+        <input type="number" id="calcPrev" value="0" step="0.01">
+      </label>
+    </div>
+
+    <div class="calc-steps" id="calcSteps"></div>
+  </div>
+</div>
+
+<script>
+const TIMER_SECONDS = 15*60;
+const STORAGE = {
+  1: {attempts:'synergy_abc_m1_attempts', best:'synergy_abc_m1_best'},
+  2: {attempts:'synergy_abc_m2_attempts', best:'synergy_abc_m2_best'}
+};
+
+const NAMES_POOL = [
+  'Молоко 3.2%, 1 л','Кефир 1%, 0.5 л','Сметана 15%, 300 г','Творог 5%, 200 г',
+  'Творог 9%, 200 г','Йогурт Клубника','Йогурт Персик','Сыр Гауда, 1 кг',
+  'Сыр Моцарелла, 250 г','Масло сливочное 82%','Хлеб Бородинский','Батон нарезной',
+  'Яйца С1, 10 шт','Сгущёнка 380 г','Ряженка 2.5%','Простокваша 1%',
+  'Творожная масса с изюмом','Творожная масса с курагой','Сырок глазированный','Даниссимо с шариками',
+  'Активиа чернослив','Активиа клубника','Растишка абрикос','Творог нежирный 500 г',
+  'Молоко топлёное 4%','Крем-сыр 200 г','Сливки 10%','Пахта 1%','Кумыс 500 мл','Айран 1%'
+];
+
+const QUADRANTS = {
+  'A-A':{label:'Затоваривание лидера',emoji:'⚠️',cls:'warn',rec:'Товар-лидер с избыточным запасом. Проверить сроки годности, при необходимости акция. Следующий заказ сократить на 15–20 %.'},
+  'A-B':{label:'Норма (лидер)',emoji:'🟢',cls:'ok',rec:'Оптимальный запас лидера. Ежедневный контроль.'},
+  'A-C':{label:'Риск дефицита (JIT)',emoji:'🟠',cls:'warn',rec:'Высокие продажи, минимальный запас — риск out-of-stock. Увеличить страховой запас, ежедневный контроль.'},
+  'B-A':{label:'Перезаказ',emoji:'🟡',cls:'warn',rec:'Запас избыточен при средних продажах. Сократить следующую закупку на 20–30 %.'},
+  'B-B':{label:'Норма',emoji:'🟢',cls:'ok',rec:'Оптимально. Контроль 1 раз в неделю.'},
+  'B-C':{label:'Норма (малый запас)',emoji:'🟢',cls:'ok',rec:'Запас невелик, продажи средние. Контроль 1 раз в неделю.'},
+  'C-A':{label:'Мёртвый груз!',emoji:'🔴',cls:'danger',rec:'Высокий запас при низких продажах. Распродажа, акция или вывод. Закупку прекратить.'},
+  'C-B':{label:'Сократить закупки',emoji:'🟡',cls:'warn',rec:'Запас избыточен. Не заказывать до снижения остатка.'},
+  'C-C':{label:'Норма',emoji:'🟢',cls:'ok',rec:'Норма. Крупными партиями раз в 2–4 недели.'}
+};
+
+let state = {
+  data: [], currentModule: 1,
+  m1:{timerId:null, remaining:TIMER_SECONDS, finished:false},
+  m2:{timerId:null, remaining:TIMER_SECONDS, finished:false}
+};
+
+function randomBetween(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+function generateData(){
+  const count = randomBetween(15,20);
+  const names = [...NAMES_POOL].sort(()=>Math.random()-0.5).slice(0,count);
+  const raw = names.map(name => ({
+    name, revenue: randomBetween(100,50000), stock: randomBetween(100,20000)
+  }));
+  const totalRev = raw.reduce((s,x)=>s+x.revenue,0);
+  let cumRev=0; const revMap={};
+  [...raw].sort((a,b)=>b.revenue-a.revenue).forEach(item=>{
+    const share = item.revenue/totalRev*100; cumRev += share;
+    revMap[item.name] = {share:+share.toFixed(2), cumulative:+cumRev.toFixed(2), group: cumRev<=80?'A':cumRev<=95?'B':'C'};
+  });
+  const totalStock = raw.reduce((s,x)=>s+x.stock,0);
+  let cumStock=0; const stockMap={};
+  [...raw].sort((a,b)=>b.stock-a.stock).forEach(item=>{
+    const share = item.stock/totalStock*100; cumStock += share;
+    stockMap[item.name] = {share:+share.toFixed(2), cumulative:+cumStock.toFixed(2), group: cumStock<=80?'A':cumStock<=95?'B':'C'};
+  });
+  return raw.map(item=>({
+    name:item.name, revenue:item.revenue, stock:item.stock,
+    share:revMap[item.name].share, cumulative:revMap[item.name].cumulative, group:revMap[item.name].group,
+    stockShare:stockMap[item.name].share, stockCumulative:stockMap[item.name].cumulative, stockGroup:stockMap[item.name].group
+  }));
+}
+
+// ---------- Таймеры ----------
+function updateTimerDisplay(mod){
+  const m = state['m'+mod];
+  const min = String(Math.floor(m.remaining/60)).padStart(2,'0');
+  const sec = String(m.remaining%60).padStart(2,'0');
+  const el = document.getElementById('timer'+mod);
+  el.textContent = `${min}:${sec}`;
+  el.classList.toggle('warning', m.remaining<=120);
+}
+function startTimerFor(mod){
+  const m = state['m'+mod];
+  if (m.timerId || m.finished) return;
+  m.timerId = setInterval(()=>{
+    m.remaining--;
+    if (m.remaining<=0){
+      clearInterval(m.timerId); m.timerId=null; m.remaining=0; m.finished=true;
+      updateTimerDisplay(mod); checkAnswers(mod,true);
+    } else updateTimerDisplay(mod);
+  },1000);
+}
+function pauseTimer(mod){
+  const m = state['m'+mod];
+  if (m.timerId){ clearInterval(m.timerId); m.timerId=null; }
+}
+function resetTimer(mod){
+  const m = state['m'+mod];
+  clearInterval(m.timerId); m.timerId=null; m.remaining=TIMER_SECONDS; m.finished=false;
+  updateTimerDisplay(mod);
+}
+
+// ---------- Рендер таблиц ----------
+function renderTable1(){
+  const data = [...state.data].sort((a,b)=>b.revenue-a.revenue);
+  const tbody = document.querySelector('#tbl1 tbody');
+  tbody.innerHTML = '';
+  const total = data.reduce((s,x)=>s+x.revenue,0);
+  document.getElementById('summary1').innerHTML =
+    `Σ Общая выручка = <b style="color:var(--purple)">${total.toLocaleString('ru-RU')} ₽</b> — это знаменатель для всех формул доли.`;
+  data.forEach((row,i)=>{
+    const prevCum = i===0 ? 0 : data.slice(0,i).reduce((s,x)=>{
+      const idx = data.findIndex(d=>d.name===x.name);
+      return s;
+    },0);
+    // пересчёт: накопленная доля до этой строки = cumulative предыдущей строки
+    const prevCumulative = i===0 ? 0 : data[i-1].cumulative;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i+1}</td>
+      <td>${row.name}</td>
+      <td style="text-align:right">${row.revenue.toLocaleString('ru-RU')}</td>
+      <td><input type="number" step="0.01" class="cell" data-col="share" data-name="${row.name}" placeholder="?"></td>
+      <td><input type="number" step="0.01" class="cell" data-col="cumulative" data-name="${row.name}" placeholder="?"></td>
+      <td><select class="group" data-name="${row.name}">
+        <option value="">—</option><option value="A">A</option><option value="B">B</option><option value="C">C</option>
+      </select></td>
+      <td><button class="btn-explain" data-mod="1" data-name="${row.name}" data-prev="${prevCumulative}" data-total="${total}" data-val="${row.revenue}" title="Разобрать расчёт">🔍</button></td>`;
+    tbody.appendChild(tr);
+  });
+  attachExplainButtons();
+}
+
+function renderTable2(){
+  const data = [...state.data].sort((a,b)=>b.stock-a.stock);
+  const tbody = document.querySelector('#tbl2 tbody');
+  tbody.innerHTML = '';
+  const total = data.reduce((s,x)=>s+x.stock,0);
+  document.getElementById('summary2').innerHTML =
+    `Σ Общий остаток = <b style="color:var(--purple)">${total.toLocaleString('ru-RU')} ₽</b> — это знаменатель для всех формул доли.`;
+  data.forEach((row,i)=>{
+    const prevCumulative = i===0 ? 0 : data[i-1].stockCumulative;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i+1}</td>
+      <td>${row.name}</td>
+      <td style="text-align:right">${row.stock.toLocaleString('ru-RU')}</td>
+      <td><input type="number" step="0.01" class="cell" data-col="stockShare" data-name="${row.name}" placeholder="?"></td>
+      <td><input type="number" step="0.01" class="cell" data-col="stockCumulative" data-name="${row.name}" placeholder="?"></td>
+      <td><select class="group" data-name="${row.name}">
+        <option value="">—</option><option value="A">A</option><option value="B">B</option><option value="C">C</option>
+      </select></td>
+      <td><button class="btn-explain" data-mod="2" data-name="${row.name}" data-prev="${prevCumulative}" data-total="${total}" data-val="${row.stock}" title="Разобрать расчёт">🔍</button></td>`;
+    tbody.appendChild(tr);
+  });
+  attachExplainButtons();
+}
+
+function attachExplainButtons(){
+  document.querySelectorAll('.btn-explain').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const mod = +btn.dataset.mod;
+      const total = +btn.dataset.total;
+      const itemVal = +btn.dataset.val;
+      const prev = +btn.dataset.prev;
+      const label = mod===1 ? 'Выручка товара' : 'Остаток товара';
+      document.getElementById('calcItemLabel').textContent = label;
+      document.getElementById('calcTotal').value = total;
+      document.getElementById('calcItem').value = itemVal;
+      document.getElementById('calcPrev').value = prev;
+      updateCalc();
+      document.getElementById('calcModal').classList.remove('hidden');
+      // highlight product name
+      document.querySelector('#calcModal .lead').innerHTML =
+        `Разбор расчёта для товара <b style="color:var(--purple)">«${btn.dataset.name}»</b>. Меняйте числа — формулы пересчитаются.`;
+    });
+  });
+}
+
+// ---------- Калькулятор ----------
+function updateCalc(){
+  const total = +document.getElementById('calcTotal').value || 0;
+  const item  = +document.getElementById('calcItem').value  || 0;
+  const prev  = +document.getElementById('calcPrev').value  || 0;
+
+  const share = total ? (item/total*100) : 0;
+  const cum   = prev + share;
+  let group, rule;
+  if (cum <= 80)       { group='A'; rule='≤ 80 %'; }
+  else if (cum <= 95)  { group='B'; rule='80 % < x ≤ 95 %'; }
+  else                 { group='C'; rule='> 95 %'; }
+
+  const fmt = n => n.toLocaleString('ru-RU', {maximumFractionDigits:2});
+  const pct = n => n.toFixed(2);
+
+  document.getElementById('calcSteps').innerHTML = `
+    <div class="calc-step">
+      <div class="calc-step-title">Шаг 1. Доля товара в общей сумме</div>
+      <div class="calc-formula">
+        ${fmt(item)} <span class="op">÷</span> ${fmt(total)} <span class="op">×</span> 100
+        <span class="op">=</span> <b>${pct(share)} %</b>
+      </div>
+      <div style="font-size:.8rem;color:var(--muted);margin-top:6px">
+        Доля = Выручка товара ÷ Σ Общая сумма × 100 %
+      </div>
+    </div>
+
+    <div class="calc-step" style="border-left-color:var(--gold)">
+      <div class="calc-step-title">Шаг 2. Накопительная (кумулятивная) доля</div>
+      <div class="calc-formula">
+        ${pct(prev)} <span class="op">+</span> ${pct(share)}
+        <span class="op">=</span> <b>${pct(cum)} %</b>
+      </div>
+      <div style="font-size:.8rem;color:var(--muted);margin-top:6px">
+        Накопительная доля = Накопленная доля предыдущих + Доля текущего товара
+      </div>
+    </div>
+
+    <div class="calc-step" style="border-left-color:var(--success)">
+      <div class="calc-step-title">Шаг 3. Присвоение группы по правилу Парето</div>
+      <div class="calc-formula">
+        ${pct(cum)} % — попадает в диапазон <b>${rule}</b>
+        <span class="op">→</span> Группа <span class="tag-${group}" style="font-size:1.05rem">${group}</span>
+      </div>
+    </div>
+
+    <div class="calc-result">
+      Результат: доля <b>${pct(share)} %</b>, накопительная <b>${pct(cum)} %</b>,
+      итоговая группа <span class="big-group tag-${group}" style="background:transparent;padding:0">${group}</span>
+      <div class="calc-bar" style="margin-top:16px">
+        <div class="calc-bar-fill ${group}" style="width:${Math.min(cum,100)}%"></div>
+        <div class="calc-bar-marker" style="left:80%" data-label="80 %"></div>
+        <div class="calc-bar-marker" style="left:95%" data-label="95 %"></div>
+      </div>
+    </div>
+  `;
+}
+
+document.getElementById('calcClose').addEventListener('click', ()=>{
+  document.getElementById('calcModal').classList.add('hidden');
+});
+document.getElementById('calcModal').addEventListener('click', (e)=>{
+  if (e.target.id === 'calcModal') document.getElementById('calcModal').classList.add('hidden');
+});
+['calcTotal','calcItem','calcPrev'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', updateCalc);
+});
+
+// Открытие калькулятора из тулбара (без предзаполнения)
+document.getElementById('btnCalc1').addEventListener('click', ()=>openCalc(1));
+document.getElementById('btnCalc2').addEventListener('click', ()=>openCalc(2));
+
+function openCalc(mod){
+  const key = mod===1 ? 'revenue' : 'stock';
+  const label = mod===1 ? 'Выручка товара' : 'Остаток товара';
+  const total = state.data.reduce((s,x)=>s+x[key],0);
+  const first = [...state.data].sort((a,b)=>b[key]-a[key])[0];
+  document.getElementById('calcItemLabel').textContent = label;
+  document.getElementById('calcTotal').value = total;
+  document.getElementById('calcItem').value = first[key];
+  document.getElementById('calcPrev').value = 0;
+  document.querySelector('#calcModal .lead').innerHTML =
+    `Свободный режим. Введите любые числа — увидите, как считаются показатели.`;
+  updateCalc();
+  document.getElementById('calcModal').classList.remove('hidden');
+}
+
+// ---------- Проверка ----------
+function checkAnswers(mod, auto=false){
+  pauseTimer(mod);
+  const m = state['m'+mod]; m.finished = true;
+  const shareKey = mod===1 ? 'share' : 'stockShare';
+  const cumKey   = mod===1 ? 'cumulative' : 'stockCumulative';
+  const groupKey = mod===1 ? 'group' : 'stockGroup';
+  const table = document.getElementById('tbl'+mod);
+  let okShare=0, okCum=0, okGroup=0;
+  const total = state.data.length;
+
+  table.querySelectorAll('input.cell').forEach(inp=>{
+    const name = inp.dataset.name, col = inp.dataset.col;
+    const item = state.data.find(x=>x.name===name);
+    const expected = item[col];
+    const val = parseFloat(inp.value);
+    const ok = Math.abs(val-expected) <= 0.5;
+    inp.classList.toggle('correct', ok); inp.classList.toggle('wrong', !ok);
+    if (ok) col===shareKey ? okShare++ : okCum++;
+  });
+  table.querySelectorAll('select.group').forEach(sel=>{
+    const name = sel.dataset.name;
+    const item = state.data.find(x=>x.name===name);
+    const ok = sel.value === item[groupKey];
+    sel.classList.toggle('correct', ok); sel.classList.toggle('wrong', !ok);
+    if (ok) okGroup++;
+  });
+
+  const groupPct = Math.round(okGroup/total*100);
+  const res = document.getElementById('result'+mod);
+  res.classList.add('show');
+  res.classList.remove('ok','bad');
+  res.classList.add(groupPct>=60 ? 'ok' : 'bad');
+  const grade = groupPct>=90?'5':groupPct>=75?'4':groupPct>=60?'3':'2';
+  let msg = auto ? '⏰ Время вышло! ' : '📋 Результат: ';
+  msg += `Группы A/B/C — <b>${okGroup}/${total}</b> (${groupPct}%) · Оценка: <b>${grade}</b><br>`;
+  msg += `<span style="font-weight:400">Доли верно: ${okShare}/${total} · Накопительные: ${okCum}/${total}</span>`;
+  if (mod===2){ msg += '<br><span style="color:var(--purple);font-weight:600">→ Матрица построена ниже ⬇</span>'; renderMatrix(); }
+  res.innerHTML = msg;
+  saveResult(mod, groupPct, grade);
+  table.querySelectorAll('input.cell,select.group').forEach(el=>el.disabled=true);
+}
+
+// ---------- Матрица ----------
+function renderMatrix(){
+  const rows = [...state.data].sort((a,b)=>b.revenue-a.revenue);
+  let html = '<div style="overflow-x:auto"><table><thead><tr>' +
+    '<th>Товар</th><th>Выручка</th><th>ABC продаж</th><th>Остаток</th><th>ABC остатка</th><th>Квадрант</th>' +
+    '</tr></thead><tbody>';
+  const byQuadrant = {};
+  rows.forEach(item=>{
+    const q = QUADRANTS[`${item.group}-${item.stockGroup}`];
+    html += `<tr>
+      <td>${item.name}</td>
+      <td style="text-align:right">${item.revenue.toLocaleString('ru-RU')}</td>
+      <td><span class="tag-${item.group}">${item.group}</span></td>
+      <td style="text-align:right">${item.stock.toLocaleString('ru-RU')}</td>
+      <td><span class="tag-${item.stockGroup}">${item.stockGroup}</span></td>
+      <td>${q.emoji} ${q.label}</td>
+    </tr>`;
+    if (!byQuadrant[q.label]) byQuadrant[q.label] = {q, items:[]};
+    byQuadrant[q.label].items.push(item.name);
+  });
+  html += '</tbody></table></div>';
+
+  let recHtml = '<h4 style="margin-top:22px;color:var(--purple)">📝 Рекомендации</h4>';
+  Object.entries(byQuadrant).forEach(([label, data])=>{
+    const border = data.q.cls==='danger'?'var(--danger)':data.q.cls==='warn'?'var(--gold)':'var(--success)';
+    recHtml += `<div style="margin:12px 0;padding:12px 16px;background:#faf8fd;border-radius:8px;border-left:4px solid ${border}">
+      <b>${data.q.emoji} ${label} (${data.items.length})</b>
+      <div style="font-size:.82rem;color:var(--muted);margin-top:4px">${data.items.join(' · ')}</div>
+      <div style="margin-top:8px;font-size:.9rem">${data.q.rec}</div>
+    </div>`;
+  });
+  document.getElementById('matrixBody').innerHTML = html;
+  document.getElementById('recommendations').innerHTML = recHtml;
+  const card = document.getElementById('matrixCard');
+  card.classList.remove('hidden');
+  setTimeout(()=>card.scrollIntoView({behavior:'smooth', block:'start'}), 100);
+}
+
+// ---------- Прогресс ----------
+function saveResult(mod, pct, grade){
+  const s = STORAGE[mod];
+  localStorage.setItem(s.attempts, +(localStorage.getItem(s.attempts)||0)+1);
+  localStorage.setItem(s.best, Math.max(+(localStorage.getItem(s.best)||0), pct));
+  renderProgress();
+}
+function renderProgress(){
+  const a1 = +(localStorage.getItem(STORAGE[1].attempts)||0);
+  const b1 = +(localStorage.getItem(STORAGE[1].best)||0);
+  const a2 = +(localStorage.getItem(STORAGE[2].attempts)||0);
+  const b2 = +(localStorage.getItem(STORAGE[2].best)||0);
+  document.getElementById('progressPanel').innerHTML = `
+    <h4 style="color:var(--purple);font-size:.95rem;margin-bottom:8px">📈 Ваш прогресс</h4>
+    <div class="stat"><b>Модуль 1 · ABC по выручке</b><br>Попыток: ${a1} · Лучший: <b>${b1}%</b></div>
+    <div class="stat"><b>Модуль 2 · ABC по остаткам</b><br>Попыток: ${a2} · Лучший: <b>${b2}%</b></div>
+  `;
+}
+
+// ---------- Инструкции ----------
+function renderInstructions(){
+  const el = document.getElementById('instructions');
+  if (state.currentModule === 1){
+    el.innerHTML = `<p style="font-size:.9rem;color:var(--muted);margin-bottom:12px">Модуль 1: ABC по выручке.</p>
+      <ol style="font-size:.9rem;padding-left:20px;line-height:1.8">
+        <li>Товары отсортированы по убыванию выручки.</li>
+        <li>Рассчитайте долю каждого товара.</li>
+        <li>Посчитайте накопительную долю.</li>
+        <li><b>Присвойте группу A / B / C.</b></li>
+        <li>Не понятно, как считается? Нажмите <b>🔍</b> в строке — калькулятор покажет все формулы.</li>
+      </ol>`;
+  } else {
+    el.innerHTML = `<p style="font-size:.9rem;color:var(--muted);margin-bottom:12px">Модуль 2: ABC по остаткам + матрица.</p>
+      <ol style="font-size:.9rem;padding-left:20px;line-height:1.8">
+        <li>Таблица отсортирована по убыванию остатков.</li>
+        <li>Рассчитайте долю остатка и накопительную.</li>
+        <li>Присвойте группу по остаткам.</li>
+        <li>Проверка построит матрицу «Продажи × Остатки».</li>
+        <li>Нажмите <b>🔍</b> в строке для разбора расчёта.</li>
+      </ol>`;
+  }
+}
+
+// ---------- Новый раунд ----------
+function newRound(){
+  state.data = generateData();
+  renderTable1(); renderTable2();
+  resetTimer(1); resetTimer(2);
+  ['result1','result2','hintPanel1','hintPanel2','matrixCard'].forEach(id=>
+    document.getElementById(id).classList.add('hidden'));
+  document.getElementById('result1').classList.remove('show');
+  document.getElementById('result2').classList.remove('show');
+  document.querySelectorAll('input.cell,select.group').forEach(el=>{
+    el.disabled = false; el.classList.remove('correct','wrong');
+    if (el.tagName === 'INPUT') el.value = ''; else el.value = '';
+  });
+  startTimerFor(state.currentModule);
+}
+
+// ---------- Переключение модулей ----------
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    const mod = +tab.dataset.mod;
+    if (mod === state.currentModule) return;
+    pauseTimer(state.currentModule);
+    state.currentModule = mod;
+    document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', +t.dataset.mod===mod));
+    document.getElementById('module1Content').style.display = mod===1?'':'none';
+    document.getElementById('module2Content').style.display = mod===2?'':'none';
+    renderInstructions();
+    startTimerFor(mod);
+  });
+});
+
+document.getElementById('btnNew1').addEventListener('click', newRound);
+document.getElementById('btnNew2').addEventListener('click', newRound);
+
+document.getElementById('btnFill1').addEventListener('click', ()=>{
+  document.querySelectorAll('#tbl1 input.cell').forEach(inp=>{
+    const item = state.data.find(x=>x.name===inp.dataset.name);
+    inp.value = item[inp.dataset.col];
+  });
+});
+document.getElementById('btnFill2').addEventListener('click', ()=>{
+  document.querySelectorAll('#tbl2 input.cell').forEach(inp=>{
+    const item = state.data.find(x=>x.name===inp.dataset.name);
+    inp.value = item[inp.dataset.col];
+  });
+});
+document.getElementById('btnCheck1').addEventListener('click', ()=>checkAnswers(1,false));
+document.getElementById('btnCheck2').addEventListener('click', ()=>checkAnswers(2,false));
+document.getElementById('btnHint1').addEventListener('click', ()=>document.getElementById('hintPanel1').classList.toggle('hidden'));
+document.getElementById('btnHint2').addEventListener('click', ()=>document.getElementById('hintPanel2').classList.toggle('hidden'));
+document.getElementById('btnResetAll').addEventListener('click', ()=>{
+  if (confirm('Сбросить статистику?')){
+    Object.values(STORAGE).forEach(s=>{
+      localStorage.removeItem(s.attempts); localStorage.removeItem(s.best);
+    });
+    renderProgress();
+  }
+});
+
+renderProgress(); renderInstructions(); newRound();
+</script>
+</body>
+</html>
